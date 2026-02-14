@@ -249,8 +249,8 @@ MIT License
 
 ## 👤 Author & Contact
 
-Your Name  
-GitHub: https://github.com/yourusername  
+LALITH PRASAD S 
+GitHub:(https://github.com/Lps1111/Gen-AI-SE.git)
 LinkedIn: www.linkedin.com/in/lalithprasads-flirtingwithfinance  
 
 ---
