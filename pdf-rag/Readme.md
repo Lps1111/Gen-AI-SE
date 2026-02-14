@@ -251,7 +251,7 @@ MIT License
 
 Your Name  
 GitHub: https://github.com/yourusername  
-LinkedIn: https://linkedin.com/in/yourprofile  
+LinkedIn: www.linkedin.com/in/lalithprasads-flirtingwithfinance  
 
 ---
 
