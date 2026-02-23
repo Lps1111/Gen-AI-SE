@@ -1,0 +1,175 @@
+{
+  "name": "Simple Newsletter - Slack to Email",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "trigger": [
+          "message"
+        ],
+        "channelId": {
+          "__rl": true,
+          "value": "C0AFWJF82SK",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "b037ac51-6c1b-4043-a270-c30539f1a1f3",
+      "name": "Slack Trigger",
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1392,
+        144
+      ],
+      "webhookId": "newsletter-trigger",
+      "credentials": {
+        "slackApi": {
+          "id": "fVVmrK7XfK1tz39S",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are a professional newsletter writer. You receive raw content and transform it into a clean, engaging HTML email newsletter. Output ONLY the HTML content (no ```html fences, no <html>/<head>/<body> wrapper tags). Use inline CSS. Keep it concise and professional with a greeting, key points, and a sign-off.",
+              "role": "system"
+            },
+            {
+              "content": "=Transform this Slack message into an HTML email newsletter:\n{{ $json.text }}\n"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "069f39e3-9d32-4dfb-a74a-30ffb6d545d1",
+      "name": "Basic LLM - Generate Newsletter",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1136,
+        144
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "1qdCgUTFzT3GdALW",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "slalithprasad@yahoo.com",
+        "subject": "=📰 Newsletter - {{ new Date().toLocaleDateString() }}",
+        "message": "={{ $json.message.content }}",
+        "options": {}
+      },
+      "id": "74473e90-bad6-4909-9fe9-7cc5d13812ac",
+      "name": "Gmail - Send Newsletter",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -768,
+        144
+      ],
+      "webhookId": "e85720cd-cdeb-476f-9e0f-bcc69f81bdae",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "DCDicd2D037J4JgH",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C05JBEXA9GT",
+          "mode": "list",
+          "cachedResultName": "general"
+        },
+        "text": "=✅ Newsletter sent successfully!\n📧 Recipients: REPLACE_WITH_RECIPIENT_EMAILS\n🕐 Sent at: {{ new Date().toLocaleString() }}",
+        "otherOptions": {}
+      },
+      "id": "77551cc5-769c-4203-9169-0b4218a8f414",
+      "name": "Slack - Notify Success",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        -480,
+        144
+      ],
+      "webhookId": "fbda77e3-c1bf-4761-9c00-7f4b1ccd8ba9",
+      "credentials": {
+        "slackApi": {
+          "id": "fVVmrK7XfK1tz39S",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Slack Trigger": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM - Generate Newsletter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM - Generate Newsletter": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Send Newsletter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Send Newsletter": {
+      "main": [
+        [
+          {
+            "node": "Slack - Notify Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Kolkata",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "e2fdc7b6-8f4a-443a-ae99-a878885ffca5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1153b6554081bfe48c6b2f6e5048a05c120291df37b7a27eaa986807b49d0e96"
+  },
+  "id": "oduq4cdqiaLwEQMB",
+  "tags": []
+}
