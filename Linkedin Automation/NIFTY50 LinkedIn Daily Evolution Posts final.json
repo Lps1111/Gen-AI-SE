@@ -1,0 +1,715 @@
+{
+  "name": "NIFTY50 LinkedIn Daily Evolution Posts v2",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "3eb874c9-a019-4295-8e44-82ba26890dac",
+      "name": "Daily 9AM Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -704,
+        0
+      ],
+      "notes": "Fires every day at 9:00 AM IST. Change cron to adjust time. 0 9 * * * = 9AM daily."
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1O899Ge-WyYCHEmFdbKhKNXtxxy6c792fBy0l7Z8A-ek",
+          "mode": "list",
+          "cachedResultName": "NIFTY50",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1O899Ge-WyYCHEmFdbKhKNXtxxy6c792fBy0l7Z8A-ek/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1037190618,
+          "mode": "list",
+          "cachedResultName": "Company_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1O899Ge-WyYCHEmFdbKhKNXtxxy6c792fBy0l7Z8A-ek/edit#gid=1037190618"
+        },
+        "combineFilters": "AND",
+        "options": {}
+      },
+      "id": "ff027983-5235-42a1-8260-e3939f38d6a5",
+      "name": "Get Next Pending Company",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        -432,
+        0
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pJt8vDKUYqLHMCOw",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-001",
+              "leftValue": "={{ $json.Company_Name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f3914a8b-8293-4c0a-9676-f0dc6e10e9ee",
+      "name": "Has Pending Company?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a001",
+              "name": "company_name",
+              "value": "={{ $json.Company_Name }}",
+              "type": "string"
+            },
+            {
+              "id": "a002",
+              "name": "next_part",
+              "value": "={{ $json.Next_Part }}",
+              "type": "string"
+            },
+            {
+              "id": "a003",
+              "name": "sector",
+              "value": "={{ $json.Sector }}",
+              "type": "string"
+            },
+            {
+              "id": "a004",
+              "name": "founded_year",
+              "value": "={{ $json.Founded_Year }}",
+              "type": "string"
+            },
+            {
+              "id": "a005",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "a006",
+              "name": "ai_prompt",
+              "value": "={{ $json.Next_Part == '1' ? 'You are a professional LinkedIn content writer specializing in Indian corporate history. Write a compelling LinkedIn post (Part 1 of 2) about the evolution of ' + $json.Company_Name + ', a company in the ' + $json.Sector + ' sector, founded in ' + $json.Founded_Year + '. Cover: founding story, early struggles, founder vision, and first major milestone. Be engaging and professional. Strictly under 1200 characters. End with a suspenseful cliffhanger hinting at Part 2. Use 2-3 relevant emojis. Start with a powerful hook line. Output only the post text, nothing else.' : 'You are a professional LinkedIn content writer specializing in Indian corporate history. Write a compelling LinkedIn post (Part 2 of 2) about the evolution of ' + $json.Company_Name + ' in the ' + $json.Sector + ' sector. Cover: post-2000 transformation, major turning points, journey to NIFTY 50, revenue milestones, and top 3 lessons for entrepreneurs. Mention this is Part 2 and Part 1 covered the founding era. Strictly under 1200 characters. End with a thought-provoking question to drive comments. Use 2-3 relevant emojis. Output only the post text, nothing else.' }}",
+              "type": "string"
+            },
+            {
+              "id": "a007",
+              "name": "image_prompt",
+              "value": "={{ 'Generate a minimalist flat-design corporate illustration representing ' + $json.Company_Name + ' in the ' + $json.Sector + ' industry of India. Clean infographic style, professional blue and white color palette, modern aesthetic. No text, no words, no logos anywhere in the image.' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c4d3b454-44ec-4d9f-b796-c02a857c1d4d",
+      "name": "Extract Data & Build Prompts",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        480,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.ai_prompt }}"
+      },
+      "id": "484f35c6-2091-4164-b89e-54e6b85a9d4e",
+      "name": "Generate LinkedIn Post",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        688,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "person": "lMQ8Pp7dNa",
+        "text": "={{ $('Generate LinkedIn Post').item.json.text }}",
+        "shareMediaCategory": "IMAGE",
+        "additionalFields": {
+          "visibility": "PUBLIC"
+        }
+      },
+      "id": "a469675d-4b79-40f5-8805-54fd3f0ef366",
+      "name": "Post to LinkedIn with Image",
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        -112
+      ],
+      "credentials": {
+        "linkedInOAuth2Api": {
+          "id": "OxvbaDaIwuWQ9bH2",
+          "name": "LinkedIn account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1O899Ge-WyYCHEmFdbKhKNXtxxy6c792fBy0l7Z8A-ek",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1037190618,
+          "mode": "list",
+          "cachedResultName": "Company_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1O899Ge-WyYCHEmFdbKhKNXtxxy6c792fBy0l7Z8A-ek/edit#gid=1037190618"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "=",
+            "Next_Part": "={{ $('Extract Data & Build Prompts').item.json.next_part == '1' ? '2' : '1' }}",
+            "Status": "={{ $('Extract Data & Build Prompts').item.json.next_part == '2' ? 'done' : 'in_progress' }}",
+            "Part1_Date": "={{ $('Extract Data & Build Prompts').item.json.next_part == '1' ? $now.toISO() : '' }}",
+            "Part2_Date": "={{ $('Extract Data & Build Prompts').item.json.next_part == '2' ? $now.toISO() : '' }}",
+            "Last_Posted_Date": "={{ $now.format('yyyy-MM-dd') }}",
+            "Company_Name": "={{ $('Extract Data & Build Prompts').item.json.company_name }}"
+          },
+          "matchingColumns": [
+            "Company_Name"
+          ],
+          "schema": [
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Company_Name",
+              "displayName": "Company_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sector",
+              "displayName": "Sector",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Founded_Year",
+              "displayName": "Founded_Year",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Next_Part",
+              "displayName": "Next_Part",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Part1_Date",
+              "displayName": "Part1_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Part2_Date",
+              "displayName": "Part2_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last_Posted_Date",
+              "displayName": "Last_Posted_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "8375905d-4bab-4acf-9e59-63b65c59f967",
+      "name": "Update Company Status",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        1648,
+        -112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pJt8vDKUYqLHMCOw",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1O899Ge-WyYCHEmFdbKhKNXtxxy6c792fBy0l7Z8A-ek",
+          "mode": "list",
+          "cachedResultName": "NIFTY50",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1O899Ge-WyYCHEmFdbKhKNXtxxy6c792fBy0l7Z8A-ek/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Post_Log",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.toISO() }}",
+            "Company": "={{ $('Extract Data & Build Prompts').item.json.company_name }}",
+            "Part": "={{ $('Extract Data & Build Prompts').item.json.next_part }}",
+            "Content_Preview": "={{ $('Generate LinkedIn Post').item.json.text.substring(0, 150) }}",
+            "LinkedIn_Post_ID": "={{ $json.id }}",
+            "Status": "success"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Part",
+              "displayName": "Part",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Content_Preview",
+              "displayName": "Content_Preview",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LinkedIn_Post_ID",
+              "displayName": "LinkedIn_Post_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "b01edc26-d761-4fcd-b6c8-c1370d25c321",
+      "name": "Append to Post Log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        1856,
+        -112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pJt8vDKUYqLHMCOw",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "7c488ec5-3f5a-452c-b2b0-eab0006fcc45",
+      "name": "All Companies Done - Stop",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        480,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ✅ NIFTY50 LinkedIn Automation v2\n\n**WHAT CHANGED FROM v1:**\n- ❌ Removed Store Post Text node (not needed)\n- ❌ Removed 4 LinkedIn HTTP nodes → replaced with 1 native LinkedIn node\n- ✅ Claude for text generation\n- ✅ Gemini 2.0 Flash for image generation\n- ✅ Native LinkedIn node with Media Category = Image\n\n**REPLACE THESE BEFORE RUNNING:**\n1. YOUR_GOOGLE_SHEET_ID_HERE (2 places)\n2. YOUR_GOOGLE_AI_API_KEY (Node 7)\n3. YOUR_ANTHROPIC_CREDENTIAL_ID (Node 6)\n4. YOUR_LINKEDIN_CREDENTIAL_ID (Node 9)\n5. YOUR_GOOGLE_SHEETS_CREDENTIAL_ID (Nodes 2, 10, 11)\n\n**NOTE: Node 8 converts Gemini base64 response**\n**to binary before LinkedIn node reads it.**",
+        "height": 360,
+        "width": 936,
+        "color": 5
+      },
+      "id": "a88810b8-3503-4cb2-a37c-c834c9f2e112",
+      "name": "Setup Notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        336
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "263d4135-eaed-41c5-ab08-e46dfe56a170",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8a87982f-ea0e-4cfa-b5e6-ce15c5794c79",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "done",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "27e8cd85-ab26-49cb-800a-3ac5f27df6e1",
+              "leftValue": "={{ $json.Last_Posted_Date }}",
+              "rightValue": "={{ $now.format('yyyy-MM-dd')}}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -208,
+        0
+      ],
+      "id": "c25331cf-1e70-4c6b-9b20-66c21f8a4ea9",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {
+          "webSearch": {
+            "searchContextSize": "high"
+          }
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        720,
+        96
+      ],
+      "id": "217bc04f-f1e2-4b69-83c9-9e24b60e7bd9",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "1qdCgUTFzT3GdALW",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-image",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-image (Nano Banana)"
+        },
+        "prompt": "={{ $('Extract Data & Build Prompts').item.json.image_prompt }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1088,
+        -112
+      ],
+      "id": "52e1f467-405b-4fdb-a94d-e18ccf4a173e",
+      "name": "Generate an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "1WXdtx9Yspgphxsf",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Daily 9AM Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Next Pending Company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Next Pending Company": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Pending Company?": {
+      "main": [
+        [
+          {
+            "node": "Extract Data & Build Prompts",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "All Companies Done - Stop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data & Build Prompts": {
+      "main": [
+        [
+          {
+            "node": "Generate LinkedIn Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate LinkedIn Post": {
+      "main": [
+        [
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to LinkedIn with Image": {
+      "main": [
+        [
+          {
+            "node": "Update Company Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Company Status": {
+      "main": [
+        [
+          {
+            "node": "Append to Post Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Has Pending Company?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate LinkedIn Post",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "Post to LinkedIn with Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Kolkata",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "9161c6f6-7a32-474e-83e0-0442139cfc3b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1153b6554081bfe48c6b2f6e5048a05c120291df37b7a27eaa986807b49d0e96"
+  },
+  "id": "7seVd5svjuzU8bNX",
+  "tags": []
+}
