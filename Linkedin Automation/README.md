@@ -108,7 +108,7 @@ Date | Company | Part | Content_Preview | LinkedIn_Post_ID | Status
 
 1. Open N8N → New Workflow
 2. Click ⋮ menu → Import from File
-3. Upload `nifty50_linkedin_workflow_v2.json`
+3. Upload `nifty50_linkedin_workflow_final.json`
 
 ### Step 4 — Configure Credentials
 
@@ -231,18 +231,7 @@ Status Flow:
 
 ---
 
-## 🗂️ File Structure
-
 ```
-nifty50-linkedin-automation/
-├── nifty50_linkedin_workflow_v2.json   ← Import this into N8N
-├── NIFTY50_LinkedIn_Tracker.xlsx       ← Upload to Google Drive
-├── README.md                           ← This file
-└── docs/
-    ├── node_configuration_guide.md     ← Detailed node setup
-    └── linkedin_setup_guide.md         ← LinkedIn OAuth guide
-```
-
 ---
 
 ## 🤖 AI Prompts Used
